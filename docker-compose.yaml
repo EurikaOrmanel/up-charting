@@ -1,0 +1,45 @@
+services:
+  backend:
+    depends_on:
+      - redis
+    container_name: up-charts-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "go run cmd/app/main.go"
+    volumes:
+      - .:/app
+      - ./data/:/app/data/charts
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+
+    networks:
+      - mynetwork
+    # environment:
+    #   - BACKEND_PORT=3002
+
+  redis:
+    image: redis:7.2.5-bookworm
+    container_name: up-charts-redis
+    restart: always
+    command: --port "${REDDIS_PORT}"
+    ports:
+      - "${REDDIS_PORT}:${REDDIS_PORT}"
+
+    env_file:
+      - ./.env
+    volumes:
+      - redis:/data
+    networks:
+      - mynetwork
+
+
+
+volumes:
+  redis:
+    driver: local
+  save_nest_db:
+
+networks:
+  mynetwork:
+    driver: bridge
