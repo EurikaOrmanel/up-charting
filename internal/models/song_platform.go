@@ -5,18 +5,15 @@ import (
 	"gorm.io/gorm"
 )
 
-
 type SongPlatform struct {
 	Base
 
-	SongID int
-	Song   Song
+	SongID uuid.UUID
 
-	PlatformID int
+	PlatformID uuid.UUID
 	Platform   Platform
-	Uid        string //the unique ID the current album bears on the specified platform
+	Url        string //the unique ID the current album bears on the specified platform
 }
-
 
 func (adM *SongPlatform) BeforeCreate(tx *gorm.DB) error {
 	adM.ID = uuid.New()

@@ -10,17 +10,19 @@ import (
 type Song struct {
 	Base
 
-	ArtistID int
+	ArtistID uuid.UUID
 	Artist   *Artist
 
 	Title string
 
 	ReleasedDate time.Time
 
-	GenreID int
+	GenreID uuid.UUID
 	Genre   Genre
 
 	AlbumID int
+
+	Platforms []SongPlatform `json:"platforms"`
 }
 
 func (adM *Song) BeforeCreate(tx *gorm.DB) error {
