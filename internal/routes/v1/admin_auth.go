@@ -10,6 +10,8 @@ func adminAuthRouter(router fiber.Router) {
 	router.Post("/register",
 		middlewares.ValidateAdminReg,
 		adminAuthControllers.AdminRegisterController)
+
 	router.Post("/login", middlewares.ValidateAdminLogin,
 		adminAuthControllers.AdminLoginController)
+		
 }

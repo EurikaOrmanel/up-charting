@@ -8,17 +8,16 @@ import (
 type Album struct {
 	Base
 
-	Title string
+	Title string `json:"title"`
 
-	Cover string
+	Cover string `json:"cover"`
 
 	ArtistID uuid.UUID
-	Artist *Artist
+	Artist   *Artist `json:"artist"`
 
-	Songs []Song
+	Songs []Song `json:"songs"`
 
 	Platforms []AlbumPlatform `json:"platforms"`
-
 }
 
 func (adM *Album) BeforeCreate(tx *gorm.DB) error {

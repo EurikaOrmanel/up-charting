@@ -8,6 +8,10 @@ import (
 )
 
 func adminGenreRouter(router fiber.Router) {
+
+	router.Get("/", middlewares.ValidateGetGenreQuery,
+		adminV1GenreControllers.GetGenresController)
+
 	router.Post("/add",
 		middlewares.ValidateAddGenreInput,
 		adminV1GenreControllers.AddGenreController)

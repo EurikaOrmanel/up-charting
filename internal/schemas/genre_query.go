@@ -1,7 +1,6 @@
 package schemas
 
-
-type ProjectsQuery struct{
+type GenreQuery struct {
 	PaginationQuery
 	Q string `query:"q" validate:"string"`
 }

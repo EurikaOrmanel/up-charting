@@ -19,3 +19,13 @@ func ValidateAddGenreInput(c *fiber.Ctx) error {
 	return c.Next()
 
 }
+
+func ValidateGetGenreQuery(c *fiber.Ctx) error {
+	query := new(schemas.GenreQuery)
+	c.QueryParser(query)
+	validatedBody := validate.Struct(*query)
+	if !validatedBody.Validate() {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(validatedBody.Errors)
+	}
+	return c.Next()
+}

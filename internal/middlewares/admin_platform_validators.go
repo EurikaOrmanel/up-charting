@@ -17,3 +17,13 @@ func AddPlatformInputValidator(c *fiber.Ctx) error {
 	return c.Next()
 
 }
+
+func ValidateGetPlatformQuery(c *fiber.Ctx) error {
+	query := new(schemas.PlatformQuery)
+	c.QueryParser(query)
+	validatedBody := validate.Struct(*query)
+	if !validatedBody.Validate() {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(validatedBody.Errors)
+	}
+	return c.Next()
+}

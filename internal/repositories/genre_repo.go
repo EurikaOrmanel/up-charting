@@ -18,10 +18,8 @@ func (db DB) CreateGenre(genre *models.Genre) error {
 	return db.Create(genre).Error
 }
 
-func (db DB) Genres(query schemas.PaginationQuery) ([]models.Genre, error) {
+func (db DB) FindGenres(query schemas.GenreQuery) ([]models.Genre, error) {
 	genres := make([]models.Genre, 0)
-	err := db.Scopes(paginate(query, db.DB)).Find(genres).Error
+	err := db.Scopes(paginate(query.PaginationQuery, db.DB)).Find(&genres, "name LIKE ?", "%"+query.Q+"%").Error
 	return genres, err
 }
-
-
