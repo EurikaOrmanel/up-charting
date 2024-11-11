@@ -11,9 +11,9 @@ type SongDailyPlay struct {
 
 	SongID uuid.UUID
 
-	PlatformID uuid.UUID
+	PlatformID uuid.UUID `json:"platform_id"`
 
-	Platform *Platform
+	Platform *Platform `json:"platform,omitempty"`
 }
 
 func (adM *SongDailyPlay) BeforeCreate(tx *gorm.DB) error {

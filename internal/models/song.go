@@ -11,8 +11,8 @@ import (
 type Song struct {
 	Base
 
-	ArtistID uuid.UUID
-	Artist   *Artist
+	ArtistID uuid.UUID `json:"artist_id"`
+	Artist   *Artist `json:"artist,omitempty"`
 
 	Title string
 

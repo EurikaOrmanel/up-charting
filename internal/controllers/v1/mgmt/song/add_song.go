@@ -38,8 +38,9 @@ func AddSongController(c *fiber.Ctx) error {
 	}
 
 	foundPlat := songPlatforms.FindSongPlatformByName("audiomack.com")
+	fmt.Printf(" foundPlat.ID:", foundPlat.ID)
 	song := models.Song{
-
+		Cover:     audiomackData.Cover,
 		Title:     body.Title,
 		ArtistID:  uuid.MustParse(body.ArtistId),
 		GenreID:   uuid.MustParse(body.GenreId),
