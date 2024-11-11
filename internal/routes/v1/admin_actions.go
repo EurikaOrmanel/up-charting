@@ -17,4 +17,7 @@ func adminMgmntActionRouter(router fiber.Router) {
 	songRouterGrp := routeGroup.Group("/sngs")
 	adminSongRouter(songRouterGrp)
 
+	adminAlbumRouterGrp := routeGroup.Group("/albm")
+	adminAlbumRouter(adminAlbumRouterGrp)
+
 }

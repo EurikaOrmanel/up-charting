@@ -5,6 +5,5 @@ type SongPlatformInput struct {
 	SongId   string
 
 	PlatformId string
-
 	Url string
 }

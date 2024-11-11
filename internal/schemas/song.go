@@ -29,6 +29,19 @@ func (platforms SongPlatformsInput) FindLinkByPart(part string) string {
 	return ""
 }
 
+func (platformINpus SongPlatformsInput) ToAlbumPlatform() models.AlbumPlatforms {
+	albumPlatforms := []models.AlbumPlatform{}
+
+	for _, snPlt := range platformINpus {
+		albumPlatforms = append(albumPlatforms, models.AlbumPlatform{
+			// SongID:     uuid.MustParse(snPlt.SongId),
+			PlatformID: uuid.MustParse(snPlt.PlatformId),
+			Url:        snPlt.Url,
+		})
+	}
+	return albumPlatforms
+}
+
 func (platformINpus SongPlatformsInput) ToSongPlatform() models.SongPlatforms {
 	songPlatforms := []models.SongPlatform{}
 	for _, snPlt := range platformINpus {
