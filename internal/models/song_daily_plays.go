@@ -5,17 +5,16 @@ import (
 	"gorm.io/gorm"
 )
 
-
-
 type SongDailyPlay struct {
 	Base
 	Count int
 
 	SongID uuid.UUID
-	Song   *Song
+
+	PlatformID uuid.UUID `json:"platform_id"`
+
+	Platform *Platform `json:"platform,omitempty"`
 }
-
-
 
 func (adM *SongDailyPlay) BeforeCreate(tx *gorm.DB) error {
 	adM.ID = uuid.New()
