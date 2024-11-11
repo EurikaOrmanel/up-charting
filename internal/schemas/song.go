@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"EurikaOrmanel/up-charter/internal/models"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -18,7 +19,17 @@ type SongPlatformsInput []struct {
 	Url        string `validate:"fullurl|required" json:"url"`
 }
 
-func (platformINpus SongPlatformsInput) ToSongPlatform() []models.SongPlatform {
+func (platforms SongPlatformsInput) FindLinkByPart(part string) string {
+	part = strings.ToLower(part)
+	for _, platform := range platforms {
+		if strings.Contains(strings.ToLower(platform.Url), part) {
+			return platform.Url
+		}
+	}
+	return ""
+}
+
+func (platformINpus SongPlatformsInput) ToSongPlatform() models.SongPlatforms {
 	songPlatforms := []models.SongPlatform{}
 	for _, snPlt := range platformINpus {
 		songPlatforms = append(songPlatforms, models.SongPlatform{

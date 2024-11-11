@@ -4,6 +4,7 @@ import (
 	"EurikaOrmanel/up-charter/config"
 	"EurikaOrmanel/up-charter/internal/models"
 	"EurikaOrmanel/up-charter/internal/schemas"
+	audiomackServices "EurikaOrmanel/up-charter/internal/services/audiomack"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -27,18 +28,34 @@ func AddSongController(c *fiber.Ctx) error {
 		errResp.Message = "Song already exists"
 		return c.Status(fiber.StatusConflict).JSON(errResp)
 	}
-	song := models.Song{
-		Title:     body.Title,
-		ArtistID:  uuid.MustParse(body.ArtistId),
-		GenreID:   uuid.MustParse(body.GenreId),
-		Platforms: body.Platforms.ToSongPlatform(),
-	}
-	err := repoDb.AddSong(&song)
+	audiomackLink := body.Platforms.FindLinkByPart("audiomack.com")
+	songPlatforms := body.Platforms.ToSongPlatform()
+	audiomackData, err := audiomackServices.AudiomackSongInfo(audiomackLink)
 
 	if err != nil {
 		fmt.Println(err)
 		return c.Status(fiber.StatusConflict).JSON(errResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(errResp)
+	foundPlat := songPlatforms.FindSongPlatformByName("audiomack.com")
+	song := models.Song{
+
+		Title:     body.Title,
+		ArtistID:  uuid.MustParse(body.ArtistId),
+		GenreID:   uuid.MustParse(body.GenreId),
+		Platforms: songPlatforms,
+		PlayCounts: []models.SongDailyPlay{{
+			Count:      audiomackData.Stats.Plays,
+			PlatformID: foundPlat.ID,
+		}},
+	}
+
+	err = repoDb.AddSong(&song)
+
+	if err != nil {
+		fmt.Println(err)
+		return c.Status(fiber.StatusConflict).JSON(errResp)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(song)
 }
