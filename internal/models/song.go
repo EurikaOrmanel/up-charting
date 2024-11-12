@@ -12,7 +12,7 @@ type Song struct {
 	Base
 
 	ArtistID uuid.UUID `json:"artist_id"`
-	Artist   *Artist `json:"artist,omitempty"`
+	Artist   *Artist   `json:"artist,omitempty"`
 
 	Title string
 
@@ -27,15 +27,15 @@ type Song struct {
 
 	Platforms SongPlatforms `json:"platforms"`
 
-	PlayCounts []SongDailyPlay
+	PlayCounts []SongDailyPlay `json:"play_counts"`
 }
 
-type SongPlatforms []SongPlatform
+type SongPlatforms []*SongPlatform
 
 func (snPlats SongPlatforms) FindSongPlatformByName(name string) *SongPlatform {
 	for _, snPlat := range snPlats {
 		if strings.Contains(strings.ToLower(snPlat.Url), strings.ToLower(name)) {
-			return &snPlat
+			return snPlat
 		}
 	}
 	return nil

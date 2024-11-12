@@ -43,9 +43,9 @@ func (platformINpus SongPlatformsInput) ToAlbumPlatform() models.AlbumPlatforms 
 }
 
 func (platformINpus SongPlatformsInput) ToSongPlatform() models.SongPlatforms {
-	songPlatforms := []models.SongPlatform{}
+	songPlatforms := []*models.SongPlatform{}
 	for _, snPlt := range platformINpus {
-		songPlatforms = append(songPlatforms, models.SongPlatform{
+		songPlatforms = append(songPlatforms, &models.SongPlatform{
 			// SongID:     uuid.MustParse(snPlt.SongId),
 			PlatformID: uuid.MustParse(snPlt.PlatformId),
 			Url:        snPlt.Url,

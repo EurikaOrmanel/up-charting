@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	cronjobs "EurikaOrmanel/up-charter/internal/cron_jobs"
 	"EurikaOrmanel/up-charter/internal/middlewares"
 	"EurikaOrmanel/up-charter/internal/routes"
 
@@ -17,6 +18,7 @@ import (
 func main() {
 	appConfig := config.Config()
 	appPort := os.Getenv("BACKEND_PORT")
+	cronjobs.ConfigJobs(appConfig)
 	fiberConfig := fiber.Config{
 		ErrorHandler: middlewares.HandlePanics,
 	}
