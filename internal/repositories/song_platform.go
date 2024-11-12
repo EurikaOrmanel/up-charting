@@ -15,7 +15,7 @@ func (db DB) FindSongPlatformCountNLastDate(platforName string, query schemas.Pa
 	then paginate the shit */
 	songUpdatedOver24hrs := db.Table("song_daily_plays").
 		Select("song_platform_id").
-		Where("song_daily_plays.created_at < DATETIME('now','-1 day')").
+		Where("song_daily_plays.created_at > DATETIME('now','-1 day')").
 		Order("created_at DESC")
 
 	db.
