@@ -57,6 +57,6 @@ func AddSongController(c *fiber.Ctx) error {
 		SongPlatformID: foundPlat.ID,
 	}}
 	err = repoDb.AddSongDailyPlays(songPlays)
-
+	go repoDb.AddSongToChart(&models.Top100Chart{SongID: song.ID, GenreID: song.GenreID})
 	return c.Status(fiber.StatusOK).JSON(song)
 }
