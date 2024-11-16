@@ -13,13 +13,12 @@ func (db DB) GetLastItemInChart() models.Top100WPlayCount {
 	songChart := new(models.Top100WPlayCount)
 	db.
 		Table("top100_charts").
-		Select("top100_charts.*,COALESCE(SUM(song_daily_plays.count),0) as total_count").
-		Joins("INNER JOIN song_platforms ON song_platforms.id = song_daily_plays.song_platform_id").
-		Joins("LEFT JOIN song_daily_plays ON song_daily_plays.song_platform_id = song_platforms.id").
+		Select("top100_charts.*, COALESCE(SUM(song_daily_plays.count),0) as total_count").
+		Joins("LEFT JOIN song_daily_plays ON song_daily_plays.song_id = top100_charts.song_id").
 		Group("top100_charts.song_id").
 		Order("position DESC").
 		Limit(1).
-		Find(&songChart)
+		Find(songChart)
 	return *songChart
 }
 func (db DB) GetChartNSongPlayCountGrtrThanCurrentPosition(
@@ -74,26 +73,35 @@ func (db DB) AddSongToChart(songChart *models.Top100Chart) error {
 		return errors.New("song not found")
 	}
 	top100Counts := db.GetChartNSongPlayCountGrtrThanCurrentPosition(currentSong.TotalCount, schemas.PaginationQuery{Count: 5, Page: 1})
+	lastSongInChart := db.GetLastItemInChart()
+	fmt.Println("Current SongID:", songChart.SongID)
 	if len(top100Counts) == 0 {
-		lastSongInChart := db.GetLastItemInChart()
 		fmt.Println("lastSongInChart.TotalCount:", lastSongInChart.TotalCount, " lastSongInChart.Position:", lastSongInChart.Position)
 		fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaadddddddddddddddddddddd new chart with position as 1")
 		if lastSongInChart.ID == uuid.Nil {
 			songChart.Position = 1
-
 		} else {
-			if lastSongInChart.TotalCount < currentSong.TotalCount {
+			if lastSongInChart.TotalCount > currentSong.TotalCount {
+				fmt.Println("lastSongInChart.TotalCount:", lastSongInChart.TotalCount, "  currentSong.TotalCount:", currentSong.TotalCount)
+				songChart.Position = lastSongInChart.Position + 1
+			} else {
+				//TODO: since last song is smaller than the new one coming in
+				//we push the new one down
 				db.ShiftDownPosition(lastSongInChart.Position, lastSongInChart.Position+1)
 				songChart.Position = lastSongInChart.Position
-			} else {
-				songChart.Position = lastSongInChart.Position + 1
 			}
 		}
 		return db.Create(songChart).Error
-	}
+	} else {
+		incomingTempPosition := lastSongInChart.Position + 1
+		if top100Counts[0].TotalCount < currentSong.TotalCount {
+			db.ShiftDownPosition(top100Counts[0].Position, incomingTempPosition)
+			songChart.Position = top100Counts[0].Position
 
-	db.ShiftDownPosition(top100Counts[0].Position, top100Counts[0].Position+1)
-	songChart.Position = top100Counts[0].Position
+		}
+	}
+	// db.ShiftDownPosition(top100Counts[0].Position, top100Counts[0].Position+1)
+	songChart.Position = top100Counts[0].Position + 1
 
 	return db.Create(songChart).Error
 }

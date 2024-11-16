@@ -20,13 +20,15 @@ func checkAllSongsChart(repoDb repositories.DB) {
 
 		for i := 0; i <= len(currentSongPlatforms)-1; i++ {
 			currentSongPlatform := currentSongPlatforms[i]
-			fmt.Println(*currentSongPlatform)
+			fmt.Println("currentSongPlatform:", *currentSongPlatform)
 
 			audiomackData, err := audiomackServices.AudiomackSongInfo(currentSongPlatform.Url)
 			if err != nil {
 				log.Println(err)
-				continue
+				// continue
 			}
+
+			fmt.Println("currentSongPlatform.TotalCount:", currentSongPlatform.TotalCount, " ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;")
 			countIncrement := audiomackData.Stats.Plays - currentSongPlatform.TotalCount
 			if countIncrement > 0 {
 				songPlays := []*models.SongDailyPlay{{
@@ -37,25 +39,27 @@ func checkAllSongsChart(repoDb repositories.DB) {
 				err = repoDb.AddSongDailyPlays(songPlays)
 				if err != nil {
 					log.Println(err)
-					continue
+					// continue
 				}
-
-				currentChart := repoDb.GetFromChartBySongID(currentSongPlatform.SongID.String())
-
-				fmt.Println("songTitle:", audiomackData.Title, "currentChart:", currentChart)
-
-				if currentChart.ID == uuid.Nil {
-					songInfo := repoDb.FindSongByID(currentSongPlatform.SongID.String())
-					fmt.Println("SongInfo:", songInfo)
-					repoDb.AddSongToChart(&models.Top100Chart{
-						SongID:  currentSongPlatform.SongID,
-						GenreID: songInfo.GenreID,
-					})
-				} else {
-					repoDb.UpdateChartPosition(&currentChart)
-				}
-
 			}
+
+			currentChart := repoDb.GetFromChartBySongID(currentSongPlatform.SongID.String())
+
+			if currentChart.ID == uuid.Nil {
+				songInfo := repoDb.FindSongByID(currentSongPlatform.SongID.String())
+				fmt.Println("SongInfo:", songInfo)
+				fmt.Println("currentSongPlatform.SongID:", currentSongPlatform.SongID, " ..............................................................")
+				err := repoDb.AddSongToChart(&models.Top100Chart{
+					SongID:  currentSongPlatform.SongID,
+					GenreID: songInfo.GenreID,
+				})
+				if err != nil {
+					log.Println(err," ----------------------")
+				}
+			} else {
+				repoDb.UpdateChartPosition(&currentChart)
+			}
+
 		}
 		pageCounts.Page += 1
 		currentSongPlatforms = repoDb.FindSongPlatformCountNLastDate("audiomack", pageCounts)

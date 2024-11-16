@@ -37,11 +37,10 @@ func (db DB) SongNChartByID(id string) models.SongNCount {
 	db.
 		Table("songs").
 		Select("songs.*,COALESCE(SUM(song_daily_plays.count),0) as total_count").
-		Joins("INNER JOIN song_platforms ON song_platforms.id = song_daily_plays.song_platform_id").
-		Joins("LEFT JOIN song_daily_plays ON song_daily_plays.song_platform_id = song_platforms.id").
-		First(&songNCount).
+		Joins("LEFT JOIN song_daily_plays ON song_daily_plays.song_id = songs.id").
 		Order("total_count DESC").
-		Limit(1)
+		Limit(1).
+		Find(songNCount)
 
 	return *songNCount
 }

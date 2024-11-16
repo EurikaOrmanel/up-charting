@@ -18,8 +18,8 @@ func (db DB) FindSongPlatformCountNLastDate(platformName string, query schemas.P
 		Scopes(paginate(query, db.DB)).
 		Table("song_platforms").
 		Select("song_platforms.*,COALESCE(SUM(song_daily_plays.count),0) as total_count").
-		Where("(song_daily_plays.created_at < DATETIME('now','-1 day') OR song_daily_plays.created_at IS NULL) AND song_platforms.url  LIKE ?", "%"+platformName+"%").
-		Joins("LEFT JOIN song_daily_plays ON song_daily_plays.song_platform_id = song_platforms.id").
+		Where("(song_daily_plays.created_at > DATETIME('now','-1 day') OR song_daily_plays.created_at IS NULL) AND song_platforms.url  LIKE ?", "%"+platformName+"%").
+		Joins("LEFT JOIN song_daily_plays ON song_daily_plays.song_id = song_platforms.song_id").
 		Group("song_platforms.song_id").
 		Find(&songPlatforms)
 

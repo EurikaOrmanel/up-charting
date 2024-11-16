@@ -25,6 +25,6 @@ func (adM *SongPlatform) BeforeCreate(tx *gorm.DB) error {
 // Song platform and total count including last date count was recorded
 type SongPlatTotCountNLastCounted struct {
 	SongPlatform
-	TotalCount  int
+	TotalCount  int 
 	LastCounted time.Time
 }
