@@ -9,7 +9,9 @@ import (
 
 func ConfigJobs(appConfig config.AppConfig) {
 	c := cron.New()
-	c.AddFunc("0 0 0 * * *", func() {
+	cronPeriod := "0 0 0 * * *"
+	cronPeriod = "*/1 * * * *"
+	c.AddFunc(cronPeriod, func() {
 		fmt.Println("Ah")
 		checkAllSongsChart(appConfig.RepoDb)
 	})

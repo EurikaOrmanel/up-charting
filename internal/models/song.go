@@ -29,7 +29,10 @@ type Song struct {
 
 	PlayCounts []SongDailyPlay `json:"play_counts"`
 }
-
+type SongNCount struct {
+	Song
+	TotalCount int `json:"total_count"`
+}
 type SongPlatforms []*SongPlatform
 
 func (snPlats SongPlatforms) FindSongPlatformByName(name string) *SongPlatform {

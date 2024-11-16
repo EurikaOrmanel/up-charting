@@ -5,6 +5,11 @@ import (
 	"EurikaOrmanel/up-charter/internal/repositories"
 	"EurikaOrmanel/up-charter/internal/schemas"
 	audiomackServices "EurikaOrmanel/up-charter/internal/services/audiomack"
+	"fmt"
+	"log"
+	"strings"
+
+	"github.com/google/uuid"
 )
 
 func checkAllSongsChart(repoDb repositories.DB) {
@@ -14,20 +19,42 @@ func checkAllSongsChart(repoDb repositories.DB) {
 	for {
 
 		for i := 0; i <= len(currentSongPlatforms)-1; i++ {
-			currentSong := currentSongPlatforms[i]
+			currentSongPlatform := currentSongPlatforms[i]
+			fmt.Println(*currentSongPlatform)
 
-			audiomackData, err := audiomackServices.AudiomackSongInfo(currentSong.Url)
+			audiomackData, err := audiomackServices.AudiomackSongInfo(currentSongPlatform.Url)
 			if err != nil {
+				log.Println(err)
 				continue
 			}
-			countIncrement := audiomackData.Stats.Plays - currentSong.TotalCount
+			countIncrement := audiomackData.Stats.Plays - currentSongPlatform.TotalCount
 			if countIncrement > 0 {
 				songPlays := []*models.SongDailyPlay{{
 					Count:          countIncrement,
-					SongID:         currentSong.SongID,
-					SongPlatformID: currentSong.PlatformID,
+					SongID:         currentSongPlatform.SongID,
+					SongPlatformID: currentSongPlatform.PlatformID,
 				}}
 				err = repoDb.AddSongDailyPlays(songPlays)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+
+				currentChart := repoDb.GetFromChartBySongID(currentSongPlatform.SongID.String())
+
+				fmt.Println("songTitle:", audiomackData.Title, "currentChart:", currentChart)
+
+				if currentChart.ID == uuid.Nil {
+					songInfo := repoDb.FindSongByID(currentSongPlatform.SongID.String())
+					fmt.Println("SongInfo:", songInfo)
+					repoDb.AddSongToChart(&models.Top100Chart{
+						SongID:  currentSongPlatform.SongID,
+						GenreID: songInfo.GenreID,
+					})
+				} else {
+					repoDb.UpdateChartPosition(&currentChart)
+				}
+
 			}
 		}
 		pageCounts.Page += 1
@@ -36,5 +63,5 @@ func checkAllSongsChart(repoDb repositories.DB) {
 			break
 		}
 	}
-
+	fmt.Println(strings.Repeat("*", 100))
 }
