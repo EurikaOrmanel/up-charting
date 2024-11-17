@@ -20,8 +20,6 @@ func checkAllSongsChart(repoDb repositories.DB) {
 
 		for i := 0; i <= len(currentSongPlatforms)-1; i++ {
 			currentSongPlatform := currentSongPlatforms[i]
-			fmt.Println("currentSongPlatform:", *currentSongPlatform)
-
 			audiomackData, err := audiomackServices.AudiomackSongInfo(currentSongPlatform.Url)
 			if err != nil {
 				log.Println(err)
@@ -48,16 +46,18 @@ func checkAllSongsChart(repoDb repositories.DB) {
 			if currentChart.ID == uuid.Nil {
 				songInfo := repoDb.FindSongByID(currentSongPlatform.SongID.String())
 				fmt.Println("SongInfo:", songInfo)
-				fmt.Println("currentSongPlatform.SongID:", currentSongPlatform.SongID, " ..............................................................")
 				err := repoDb.AddSongToChart(&models.Top100Chart{
 					SongID:  currentSongPlatform.SongID,
 					GenreID: songInfo.GenreID,
 				})
 				if err != nil {
-					log.Println(err," ----------------------")
+					log.Println(err)
 				}
 			} else {
-				repoDb.UpdateChartPosition(&currentChart)
+				err := repoDb.UpdateChartPosition(&currentChart)
+				if err != nil {
+					log.Println(err, " ;;;;----;;;---;;;---;;;")
+				}
 			}
 
 		}
