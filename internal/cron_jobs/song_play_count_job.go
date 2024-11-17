@@ -45,7 +45,6 @@ func checkAllSongsChart(repoDb repositories.DB) {
 
 			if currentChart.ID == uuid.Nil {
 				songInfo := repoDb.FindSongByID(currentSongPlatform.SongID.String())
-				fmt.Println("SongInfo:", songInfo)
 				err := repoDb.AddSongToChart(&models.Top100Chart{
 					SongID:  currentSongPlatform.SongID,
 					GenreID: songInfo.GenreID,

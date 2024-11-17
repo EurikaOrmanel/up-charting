@@ -70,20 +70,31 @@ func (db DB) GetChartNSongPlayCountCurrentPosition(
 	return songsFromPosition
 }
 
-func (db DB) GetFullChartSortedByPosition() []models.Top100WPlayCount {
+func (db DB) GetFullChartSortedByTotalCount() []models.Top100WPlayCount {
 	songsFromPosition := []models.Top100WPlayCount{}
 	db.
 		Table("top100_charts").
 		Select("top100_charts.*,COALESCE(SUM(song_daily_plays.count),0) as total_count").
 		Joins("LEFT JOIN song_daily_plays ON song_daily_plays.song_id = top100_charts.song_id").
 		Group("top100_charts.song_id").
-		Order("position DESC").
+		Order("total_count DESC").
 		Find(&songsFromPosition)
 	return songsFromPosition
 }
 
-func (db DB) GetChartNSongPlayCountLTCurrentPosition(
-	playCount int,
+func (db DB) GetFullChartSortedByPostion() []models.Top100WPlayCount {
+	songsFromPosition := []models.Top100WPlayCount{}
+	db.
+		Table("top100_charts").
+		Select("top100_charts.*,COALESCE(SUM(song_daily_plays.count),0) as total_count").
+		Joins("LEFT JOIN song_daily_plays ON song_daily_plays.song_id = top100_charts.song_id").
+		Group("top100_charts.song_id").
+		Order("position ASC").
+		Find(&songsFromPosition)
+	return songsFromPosition
+}
+
+func (db DB) GetChartNSongPlayCountLTCurrentPosition(playCount int,
 	query schemas.PaginationQuery,
 ) []models.Top100WPlayCount {
 	songsFromPosition := []models.Top100WPlayCount{}
@@ -119,13 +130,15 @@ func (db DB) UpdateChartPosition(songChart *models.Top100Chart) error {
 	fmt.Println("currentSong.TotalPlay:", currentSong.TotalCount)
 	fmt.Println("top100Counts[0].TotalPlay:", top100Counts[0].TotalCount)
 	if len(top100Counts) > 0 {
+		songCharts := models.Top100Charts{}
 		if currentSong.TotalCount > top100Counts[0].TotalCount {
 
 			currentPosition := db.GetFromChartBySongID(currentSong.ID.String())
 			db.ShiftDownPosition(currentPosition.Position, top100Counts[0].Position)
 			songChart.PreviousPosition = songChart.Position
 			songChart.Position = top100Counts[0].Position
-			return db.UpdateTop100Chart(songChart)
+			songCharts = append(songCharts, *songChart)
+			return db.UpdateTop100Charts(&songCharts)
 		}
 	}
 	return nil
@@ -147,17 +160,17 @@ func (db DB) AddSongToChart(songChart *models.Top100Chart) error {
 	}()
 
 	// Fetch the entire chart sorted by position
-	chart := db.GetFullChartSortedByPosition()
+	chart := db.GetFullChartSortedByTotalCount()
 	newPosition := -1
 
 	// Determine the new position based on TotalCount
 	for _, chartPos := range chart {
 		if currentSong.TotalCount > chartPos.TotalCount {
 			newPosition = chartPos.Position
+			fmt.Println("Chart position assigned to existing one:", newPosition)
 			break
 		}
 	}
-
 	if newPosition == -1 {
 		// If the song has the lowest count or the chart is empty
 		lastChart := db.GetLastItemInChart()
@@ -170,7 +183,8 @@ func (db DB) AddSongToChart(songChart *models.Top100Chart) error {
 		}
 	} else {
 		// Shift down all songs from the new position
-		if err := db.ShiftDownPosition(newPosition, len(chart)+1); err != nil {
+		chartsByPosition := db.GetFullChartSortedByPostion()
+		if err := db.ShiftDownPosition(newPosition, chartsByPosition[len(chartsByPosition)-1].Position+1); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -271,17 +285,87 @@ func (db DB) GetFromChartBySongID(songId string) models.Top100Chart {
 	db.First(chart, "song_id = ?", songId)
 	return *chart
 }
+func (db DB) GetChartsByPositionGTCurrent(currentPosition int) models.Top100Charts {
+	chartsNSongs := models.Top100Charts{}
+	db.
+		Preload("top100_charts").Where("position >= ?", currentPosition).
+		Order("position ASC").
+		Find(&chartsNSongs)
+	return chartsNSongs
+
+}
 
 func (db DB) ShiftUpPosition(currentPosition int, newPosition int) error {
 	return db.Exec("UPDATE top100_charts SET position = position - 1,previous_position = position WHERE position < ? AND position >= ?", currentPosition, newPosition).Error
 
 }
 
-func (db DB) ShiftDownPosition(currentPosition int, newPosition int) error {
-	return db.Exec("UPDATE top100_charts SET position = position + 1,previous_position = position WHERE  position >= ? AND position < ? ", currentPosition, newPosition).Error
+// func (db DB) ShiftDownPosition(currentPosition int, newPosition int) error {
+// 	chartsGTOrE := db.GetChartsByPositionGTCurrent(currentPosition)
+// 	for _, currentChart := range chartsGTOrE {
+// 		if currentChart.Position >= currentPosition && currentChart.Position < newPosition {
+// 			currentChart.Position = currentChart.Position + 1
+// 			currentChart.PreviousPosition = currentChart.Position
+// 			db.UpdateTop100Chart(&currentChart)
+// 		}
+// 	}
+// 	// return db.Exec("UPDATE top100_charts SET position = position + 1,previous_position = position WHERE  position >= ? AND position < ? ", currentPosition, newPosition).Error
+// 	return nil
+// }
 
+// func (db DB) ShiftDownPosition(currentPosition int, newPosition int) error {
+// 	// Ensure newPosition is greater than currentPosition
+// 	if newPosition <= currentPosition {
+// 		return fmt.Errorf("newPosition must be greater than currentPosition")
+// 	}
+
+// 	// Perform the update in descending order to avoid conflicts
+// 	query := ` 
+//         UPDATE top100_charts
+//         SET position = position + 1,
+//             previous_position = position
+//         WHERE position >= ? AND position < ?
+//         ORDER BY position DESC;`
+
+// 	if err := db.Exec(query, currentPosition, newPosition).Error; err != nil {
+// 		return fmt.Errorf("failed to shift down positions: %w", err)
+// 	}
+// 	return nil
+// }
+
+func (db DB) ShiftDownPosition(currentPosition int, newPosition int) error {
+    // Ensure newPosition is greater than currentPosition
+    if newPosition <= currentPosition {
+        return fmt.Errorf("newPosition must be greater than currentPosition")
+    }
+
+    // Fetch rows to update in descending order of position
+    rows := []models.Top100Chart{}
+    if err := db.Where("position >= ? AND position < ?", currentPosition, newPosition).
+        Order("position DESC").
+        Find(&rows).Error; err != nil {
+        return fmt.Errorf("failed to fetch rows: %w", err)
+    }
+
+    // Update each row one at a time
+    for _, row := range rows {
+        row.PreviousPosition = row.Position
+        row.Position = row.Position + 1
+        if err := db.Save(&row).Error; err != nil {
+            return fmt.Errorf("failed to update row ID %d: %w", row.ID, err)
+        }
+    }
+
+    return nil
+}
+func (db DB) UpdateChart(songChart *models.Top100Chart) error {
+	return db.Model(models.Top100Chart{}).Where("id = ?", songChart.ID).Updates(songChart).Error
 }
 
 func (db DB) UpdateTop100Chart(chart *models.Top100Chart) error {
 	return db.Model(models.Top100Chart{}).Where("id = ?", chart.ID).Updates(*chart).Error
+}
+
+func (db DB) UpdateTop100Charts(chart *models.Top100Charts) error {
+	return db.Model(models.Top100Chart{}).Where("id IN (?)", chart.GetIdStrings()).Updates(*chart).Error
 }
