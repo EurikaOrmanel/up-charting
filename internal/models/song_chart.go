@@ -4,12 +4,12 @@ import "github.com/google/uuid"
 
 type Top100Chart struct {
 	Base
-	Position         int `gorm:"unique"`
-	PreviousPosition int
-	SongID           uuid.UUID `gorm:"unique"`
-	Song             *Song
-	GenreID          uuid.UUID
-	Genre            *Genre
+	Position         int       `gorm:"unique" json:"position,omitempty"`
+	PreviousPosition int       `json:"previous_position,omitempty"`
+	SongID           uuid.UUID `gorm:"unique" json:"song_id,omitempty"`
+	Song             *Song     `json:"song,omitempty"`
+	GenreID          uuid.UUID `json:"genre_id,omitempty"`
+	Genre            *Genre    `json:"genre,omitempty"`
 }
 type Top100WPlayCount struct {
 	Top100Chart

@@ -93,7 +93,11 @@ func (db DB) GetFullChartSortedByTotalCount() []models.Top100WPlayCount {
 		Scan(&songsFromPosition)
 	return songsFromPosition
 }
-
+func (db DB) GetTop100Chart() []models.Top100Chart {
+	chart := []models.Top100Chart{}
+	db.Find(&chart).Order("position ASC")
+	return chart
+}
 func (db DB) GetFullChartSortedByPostion() []models.Top100WPlayCount {
 	songsFromPosition := []models.Top100WPlayCount{}
 	db.
@@ -104,6 +108,17 @@ func (db DB) GetFullChartSortedByPostion() []models.Top100WPlayCount {
 		Order("position ASC").
 		Find(&songsFromPosition)
 	return songsFromPosition
+}
+
+func (db DB) GetChart100NSong() []models.Top100Chart {
+	top100 := []models.Top100Chart{}
+	err := db.Preload("Song").
+		Order("position ASC").
+		Limit(100).Find(&top100).Error
+	if err != nil {
+		fmt.Println(err)
+	}
+	return top100
 }
 
 func (db DB) GetChartNSongPlayCountLTCurrentPosition(playCount int,

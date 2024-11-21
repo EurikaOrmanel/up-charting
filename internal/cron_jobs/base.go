@@ -13,7 +13,7 @@ func ConfigJobs(appConfig config.AppConfig) {
 	cronPeriod = "*/1 * * * *"
 	c.AddFunc(cronPeriod, func() {
 		fmt.Println("Ah")
-		checkAllSongsChart(appConfig.RepoDb)
+		checkAllSongsChart(appConfig)
 	})
 	c.Start()
 }

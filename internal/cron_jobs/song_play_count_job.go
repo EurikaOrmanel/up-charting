@@ -1,8 +1,8 @@
 package cronjobs
 
 import (
+	"EurikaOrmanel/up-charter/config"
 	"EurikaOrmanel/up-charter/internal/models"
-	"EurikaOrmanel/up-charter/internal/repositories"
 	"EurikaOrmanel/up-charter/internal/schemas"
 	audiomackServices "EurikaOrmanel/up-charter/internal/services/audiomack"
 	"fmt"
@@ -12,10 +12,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func checkAllSongsChart(repoDb repositories.DB) {
+func checkAllSongsChart(appConfig config.AppConfig) {
 	//TODO: join queries to fetch songs and platform urls and then get their stream counts
 	pageCounts := schemas.PaginationQuery{Count: 10, Page: 1}
-	currentSongPlatforms := repoDb.FindSongPlatformCountNLastDate("audiomack", pageCounts)
+	currentSongPlatforms := appConfig.RepoDb.FindSongPlatformCountNLastDate("audiomack", pageCounts)
 	for {
 
 		for i := 0; i <= len(currentSongPlatforms)-1; i++ {
@@ -34,18 +34,18 @@ func checkAllSongsChart(repoDb repositories.DB) {
 					SongID:         currentSongPlatform.SongID,
 					SongPlatformID: currentSongPlatform.PlatformID,
 				}}
-				err = repoDb.AddSongDailyPlays(songPlays)
+				err = appConfig.RepoDb.AddSongDailyPlays(songPlays)
 				if err != nil {
 					log.Println(err)
 					// continue
 				}
 			}
 
-			currentChart := repoDb.GetFromChartBySongID(currentSongPlatform.SongID.String())
+			currentChart := appConfig.RepoDb.GetFromChartBySongID(currentSongPlatform.SongID.String())
 
 			if currentChart.ID == uuid.Nil {
-				songInfo := repoDb.FindSongByID(currentSongPlatform.SongID.String())
-				err := repoDb.AddSongToChart(&models.Top100Chart{
+				songInfo := appConfig.RepoDb.FindSongByID(currentSongPlatform.SongID.String())
+				err := appConfig.RepoDb.AddSongToChart(&models.Top100Chart{
 					SongID:  currentSongPlatform.SongID,
 					GenreID: songInfo.GenreID,
 				})
@@ -53,7 +53,7 @@ func checkAllSongsChart(repoDb repositories.DB) {
 					log.Println(err)
 				}
 			} else {
-				err := repoDb.UpdateChartPosition(&currentChart)
+				err := appConfig.RepoDb.UpdateChartPosition(&currentChart)
 				if err != nil {
 					log.Println(err, " ;;;;----;;;---;;;---;;;")
 				}
@@ -61,10 +61,14 @@ func checkAllSongsChart(repoDb repositories.DB) {
 
 		}
 		pageCounts.Page += 1
-		currentSongPlatforms = repoDb.FindSongPlatformCountNLastDate("audiomack", pageCounts)
+		currentSongPlatforms = appConfig.RepoDb.FindSongPlatformCountNLastDate("audiomack", pageCounts)
 		if len(currentSongPlatforms) == 0 {
 			break
 		}
 	}
 	fmt.Println(strings.Repeat("*", 100))
+	chart := appConfig.RepoDb.GetChart100NSong()
+	appConfig.CacheConfig.SetTop100Chart(chart)
+
+	//TODO:fetch new chart and cache to redis for later usage
 }

@@ -7,7 +7,9 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type CacheConfig struct{ *redis.Client }
+type CacheConfig struct {
+	RedisClient *redis.Client
+}
 
 var ctx = context.Background()
 

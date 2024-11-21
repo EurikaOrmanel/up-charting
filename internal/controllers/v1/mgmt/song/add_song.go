@@ -43,7 +43,7 @@ func AddSongController(c *fiber.Ctx) error {
 		Title:     body.Title,
 		ArtistID:  uuid.MustParse(body.ArtistId),
 		GenreID:   uuid.MustParse(body.GenreId),
-		Platforms: songPlatforms,
+		Platforms: &songPlatforms,
 	}
 
 	err = repoDb.AddSong(&song)
