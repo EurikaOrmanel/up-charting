@@ -112,7 +112,7 @@ func (db DB) GetFullChartSortedByPostion() []models.Top100WPlayCount {
 
 func (db DB) GetChart100NSong() []models.Top100Chart {
 	top100 := []models.Top100Chart{}
-	err := db.Preload("Song").
+	err := db.Preload("Song").Preload("Song.Artist").
 		Order("position ASC").
 		Limit(100).Find(&top100).Error
 	if err != nil {
@@ -351,7 +351,7 @@ func (db DB) GetCharts(query schemas.PaginationQuery) models.Top100Charts {
 
 	db.
 		Scopes(paginate(query, db.DB)).
-		Preload("song").Find(&chartsNSongs)
+		Preload("song").Preload("song.artist").Find(&chartsNSongs)
 	return chartsNSongs
 
 }

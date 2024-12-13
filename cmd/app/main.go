@@ -3,6 +3,7 @@ package main
 import (
 	"EurikaOrmanel/up-charter/config"
 	"fmt"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"log"
 	"os"
 
@@ -24,6 +25,7 @@ func main() {
 	}
 	app := fiber.New(fiberConfig)
 	app.Use(recover.New())
+	app.Use(cors.New())
 
 	app.Use(config.InjectAppConfig(appConfig))
 	routes.API(app)
