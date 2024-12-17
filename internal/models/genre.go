@@ -7,7 +7,7 @@ import (
 
 type Genre struct {
 	Base
-	Name string `gorm:"not null" json:"name"`
+	Name string `gorm:"not null" json:"name,omitempty"`
 }
 
 func (adM *Genre) BeforeCreate(tx *gorm.DB) error {

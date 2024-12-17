@@ -43,19 +43,20 @@ func AddSongController(c *fiber.Ctx) error {
 		Title:     body.Title,
 		ArtistID:  uuid.MustParse(body.ArtistId),
 		GenreID:   uuid.MustParse(body.GenreId),
-		Platforms: songPlatforms,
-		PlayCounts: []models.SongDailyPlay{{
-			Count:      audiomackData.Stats.Plays,
-			PlatformID: foundPlat.ID,
-		}},
+		Platforms: &songPlatforms,
 	}
 
 	err = repoDb.AddSong(&song)
-
 	if err != nil {
 		fmt.Println(err)
 		return c.Status(fiber.StatusConflict).JSON(errResp)
 	}
-
+	songPlays := []*models.SongDailyPlay{{
+		Count:          audiomackData.Stats.Plays,
+		SongID:         song.ID,
+		SongPlatformID: foundPlat.ID,
+	}}
+	err = repoDb.AddSongDailyPlays(songPlays)
+	go repoDb.AddSongToChart(&models.Top100Chart{SongID: song.ID, GenreID: song.GenreID})
 	return c.Status(fiber.StatusOK).JSON(song)
 }

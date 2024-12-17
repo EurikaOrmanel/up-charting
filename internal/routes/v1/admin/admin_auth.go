@@ -6,12 +6,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func adminAuthRouter(router fiber.Router) {
+func AdminAuthRouter(router fiber.Router) {
 	router.Post("/register",
 		middlewares.ValidateAdminReg,
 		adminAuthControllers.AdminRegisterController)
 
-	router.Post("/login", middlewares.ValidateAdminLogin,
+	router.Post("/login",
+		middlewares.ValidateAdminLogin,
 		adminAuthControllers.AdminLoginController)
-		
+
 }

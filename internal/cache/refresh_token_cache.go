@@ -9,17 +9,17 @@ import (
 func (cacheConfig CacheConfig) SetRefreshToken(authId string, token string) error {
 	key := fmt.Sprintf("refresh_token:%s", authId)
 	value := "value:" + token
-	err := cacheConfig.Client.Set(ctx, key, value, time.Minute*15).Err()
+	err := cacheConfig.RedisClient.Set(ctx, key, value, time.Minute*15).Err()
 	if err != nil {
 		return err
 	}
-	return cacheConfig.Client.Set(ctx, value, key, time.Minute*5).Err()
+	return cacheConfig.RedisClient.Set(ctx, value, key, time.Minute*5).Err()
 
 }
 
 func (cacheConfig CacheConfig) FindUserIdByToken(refreshToken string) (string, error) {
 	value := "value:" + refreshToken
-	foundTokens, err := cacheConfig.Client.Get(ctx, value).Result()
+	foundTokens, err := cacheConfig.RedisClient.Get(ctx, value).Result()
 	if err != nil {
 		return "", err
 	}
@@ -31,15 +31,15 @@ func (cacheConfig CacheConfig) FindUserIdByToken(refreshToken string) (string, e
 
 func (cacheConfig CacheConfig) DeleteTokenCache(authId string) error {
 	key := fmt.Sprintf("refresh_token:%s", authId)
-	foundToken, err := cacheConfig.Client.Get(ctx, key).Result()
+	foundToken, err := cacheConfig.RedisClient.Get(ctx, key).Result()
 	if err != nil {
 		return err
 	}
 
-	err = cacheConfig.Client.Del(ctx, key).Err()
+	err = cacheConfig.RedisClient.Del(ctx, key).Err()
 	if err != nil {
 		return err
 	}
 
-	return cacheConfig.Client.Del(ctx, foundToken).Err()
+	return cacheConfig.RedisClient.Del(ctx, foundToken).Err()
 }

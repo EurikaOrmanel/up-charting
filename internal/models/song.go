@@ -12,30 +12,33 @@ type Song struct {
 	Base
 
 	ArtistID uuid.UUID `json:"artist_id"`
-	Artist   *Artist `json:"artist,omitempty"`
+	Artist   *Artist   `json:"artist,omitempty"`
 
-	Title string
+	Title string `json:"title"`
 
-	Cover string
+	Cover string `json:"cover"`
 
-	ReleasedDate time.Time
+	ReleasedDate time.Time `json:"released_date,omitempty"`
 
-	GenreID uuid.UUID
-	Genre   Genre
+	GenreID uuid.UUID `json:"genre_id,omitempty"`
+	Genre   *Genre    `json:"genre,omitempty"`
 
-	AlbumID int
+	AlbumID int `json:"album_id"`
 
-	Platforms SongPlatforms `json:"platforms"`
+	Platforms *SongPlatforms `json:"platforms,omitempty"`
 
-	PlayCounts []SongDailyPlay
+	PlayCounts []SongDailyPlay `json:"play_counts"`
 }
-
-type SongPlatforms []SongPlatform
+type SongNCount struct {
+	Song
+	TotalCount int `json:"total_count"`
+}
+type SongPlatforms []*SongPlatform
 
 func (snPlats SongPlatforms) FindSongPlatformByName(name string) *SongPlatform {
 	for _, snPlat := range snPlats {
 		if strings.Contains(strings.ToLower(snPlat.Url), strings.ToLower(name)) {
-			return &snPlat
+			return snPlat
 		}
 	}
 	return nil
