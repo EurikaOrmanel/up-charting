@@ -8,7 +8,7 @@ import (
 func AuthRequiredEndpoints(router fiber.Router) {
 	jwt := middlewares.AuthMiddleware()
 	router.All("*",
-		jwt, middlewares.AuthVerifier,
+		jwt, /*middlewares.AuthVerifier,*/
 		middlewares.InjectVerifiedUserAuth)
 
 	adminMgmntActionRouter(router)
