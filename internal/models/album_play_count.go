@@ -10,7 +10,9 @@ type AlbumPlayCount struct {
 
 	Count   int
 	AlbumID uuid.UUID
-	Album   *Album
+	
+	PlatformID uuid.UUID
+	Platform *Platform
 }
 
 func (adM *AlbumPlayCount) BeforeCreate(tx *gorm.DB) error {

@@ -6,7 +6,6 @@ import (
 )
 
 func API(app *fiber.App) {
-
 	api := app.Group("/v1")
 	v1.V1(api)
 }

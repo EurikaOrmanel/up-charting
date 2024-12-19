@@ -36,6 +36,7 @@ func (repoDb DB) MigrateAll() {
 	repoDb.AutoMigrate(&models.Genre{}, &models.Song{}, &models.SongPlatform{})
 	repoDb.AutoMigrate(&models.Admin{})
 	repoDb.AutoMigrate(&models.Artist{}, &models.ArtistPlatform{}, &models.SongDailyPlay{})
+	repoDb.AutoMigrate(&models.Top100Chart{})
 }
 
 func ensureBaseDir(fpath string) error {

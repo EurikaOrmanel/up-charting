@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func authRequiredEndpoints(router fiber.Router) {
+func AuthRequiredEndpoints(router fiber.Router) {
 	jwt := middlewares.AuthMiddleware()
 	router.All("*",
 		jwt, middlewares.AuthVerifier,

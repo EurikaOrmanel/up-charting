@@ -12,7 +12,7 @@ type AlbumPlatform struct {
 	PlatformID uuid.UUID
 	Platform   *Platform
 
-	Uid string //the unique ID the current album bears on the specified platform
+	Url string 
 }
 
 func (adM *AlbumPlatform) BeforeCreate(tx *gorm.DB) error {
