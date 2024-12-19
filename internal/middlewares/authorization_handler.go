@@ -27,10 +27,8 @@ func jwtErrorHandler(c *fiber.Ctx, err error) error {
 func AuthVerifier(c *fiber.Ctx) error {
 
 	// userAuth := c.Locals("user").(*jwt.Token)
-
 	// claims := userAuth.Claims.(jwt.MapClaims)
 	// authId := claims["id"].(string)
-
 	// adminVerified := claims["verified"].(bool)
 	adminVerified := true
 	if !adminVerified {
