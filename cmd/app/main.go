@@ -26,11 +26,7 @@ func main() {
 	}
 	app := fiber.New(fiberConfig)
 	app.Use(recover.New())
-	app.Use(cors.New(
-		cors.Config{
-			AllowOrigins:     "*",
-			AllowCredentials: true,
-		}))
+	app.Use(cors.New())
 
 	app.Use(config.InjectAppConfig(appConfig))
 	routes.API(app)
