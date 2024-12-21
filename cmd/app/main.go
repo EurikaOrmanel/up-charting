@@ -3,9 +3,10 @@ package main
 import (
 	"EurikaOrmanel/up-charter/config"
 	"fmt"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"log"
 	"os"
+
+	"github.com/gofiber/fiber/v2/middleware/cors"
 
 	cronjobs "EurikaOrmanel/up-charter/internal/cron_jobs"
 	"EurikaOrmanel/up-charter/internal/middlewares"
@@ -25,7 +26,11 @@ func main() {
 	}
 	app := fiber.New(fiberConfig)
 	app.Use(recover.New())
-	app.Use(cors.New())
+	app.Use(cors.New(
+		cors.Config{
+			AllowOrigins:     "*",
+			AllowCredentials: true,
+		}))
 
 	app.Use(config.InjectAppConfig(appConfig))
 	routes.API(app)
