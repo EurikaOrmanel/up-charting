@@ -26,7 +26,8 @@ func main() {
 	}
 	app := fiber.New(fiberConfig)
 	app.Use(recover.New())
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{AllowOrigins: "https://up-charter.netlify.app,http://localhost:3000,http://localhost:3001",
+		AllowMethods: "POST,GET,DELETE,OPTIONS,PUT,PATCH,DELETE"}))
 
 	app.Use(config.InjectAppConfig(appConfig))
 	routes.API(app)
